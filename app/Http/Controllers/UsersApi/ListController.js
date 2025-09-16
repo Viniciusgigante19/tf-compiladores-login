@@ -1,4 +1,4 @@
-import TodoModel from "../../../Models/TodoModel.js";
+
 import UserModel from "../../../Models/UserModel.js";
 
 export default async (request, response) => {
@@ -33,13 +33,7 @@ export default async (request, response) => {
         const { rows, count } = await UserModel.findAndCountAll({
             limit: limit + 1,
             offset: offset,
-            order: [[orderField, orderDirection]],
-            include: [
-                {
-                    model: TodoModel,
-                    as: "todos"
-                }
-            ]
+            order: [[orderField, orderDirection]]
         });
 
         const hasMore = (rows.length > limit);
