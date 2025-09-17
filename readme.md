@@ -128,7 +128,7 @@
    npm install -g vite
    ```
    ```sh
-   vite
+   ./node_modules/.bin/vite
    ```
 ---
 
