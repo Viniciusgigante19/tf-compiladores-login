@@ -12,16 +12,16 @@ const app = express();
 
 // Permite requisições do frontend Vite (porta 5173 ou 5174)
 app.use(cors({
-  origin: "http://localhost:5174",
+  origin: "http://localhost:5173",
   credentials: true
 }));
 
 // middleware para garantir headers em erros
-app.use((err, req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5174");
-  res.header("Access-Control-Allow-Credentials", "true");
-  next(err);
-});
+// app.use((err, req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+//   res.header("Access-Control-Allow-Credentials", "true");
+//   next(err);
+// });
 
 
 /** Inicializar rotas  */

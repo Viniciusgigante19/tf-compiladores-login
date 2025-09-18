@@ -5,6 +5,7 @@ interface User {
   id: number;
   name: string;
   email: string;
+  photo?: string | null;
 }
 
 interface HomeProps {
@@ -20,16 +21,17 @@ interface ApiResponse {
 
 const Home: FC<HomeProps> = ({ onLogout }) => {
   const [users, setUsers] = useState<User[]>([]);
+  const [loggedUser, setLoggedUser] = useState<User | null>(null);
   const [offset, setOffset] = useState(0);
   const [next, setNext] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploadMessage, setUploadMessage] = useState<string>("");
-  const [loggedUserId, setLoggedUserId] = useState<number | null>(null);
 
   const limit = 10;
 
+  // Pega o ID do usuário do token
   const getUserIdFromToken = () => {
     const token = localStorage.getItem("token");
     if (!token) return null;
@@ -41,6 +43,7 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
     }
   };
 
+  // Busca usuários paginados
   const fetchUsers = async (currentOffset = 0) => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -50,13 +53,8 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
     try {
       const res = await fetch(
         `http://localhost:3000/api/users?offset=${currentOffset}&limit=${limit}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       if (!res.ok) throw new Error("Erro ao buscar usuários");
 
       const data: ApiResponse = await res.json();
@@ -70,9 +68,27 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
     }
   };
 
+  // Busca dados do usuário logado
+  const fetchLoggedUser = async (id: number) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await fetch(`http://localhost:3000/api/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Erro ao buscar usuário logado");
+
+      const data: User = await res.json();
+      setLoggedUser(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     const id = getUserIdFromToken();
-    if (id) setLoggedUserId(id);
+    if (id) fetchLoggedUser(id);
     fetchUsers();
   }, []);
 
@@ -82,14 +98,13 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      setSelectedFile(e.target.files[0]);
+      setPreviewUrl(URL.createObjectURL(e.target.files[0]));
     }
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !loggedUser) return;
 
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -100,87 +115,92 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
     try {
       const res = await fetch("http://localhost:3000/api/users/image", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
-
       if (!res.ok) throw new Error("Erro no upload");
 
       const data = await res.json();
       setUploadMessage("Upload concluído: " + data.imagem);
+
+      // Atualiza o usuário logado com a nova foto
+      fetchLoggedUser(loggedUser.id);
+      setPreviewUrl(null); // limpa preview
     } catch (err) {
       console.error(err);
       setUploadMessage("Erro ao enviar arquivo.");
     }
   };
 
+  // Retorna URL da imagem usando a rota do backend
+  const getUserPhotoUrl = (user: User) => {
+    if (!user.photo) return "/default-user.png"; // fallback
+    return `http://localhost:3000/users/image/${user.id}?t=${Date.now()}`;
+  };
+
   return (
     <div className="home-container">
       <div className="home-content">
+
+        {/* Upload box */}
         <div className="upload-box">
-          <h3 className="upload-title">Upload de Imagem</h3>
+          <h3>Upload de Imagem</h3>
           <input type="file" accept="image/*" onChange={handleFileChange} />
           {previewUrl && (
-            <div className="preview-wrap">
-  <img
-    src={previewUrl}
-    alt="Pré-visualização"
-    className="preview-img"
-    style={{ width: "150px", height: "150px", objectFit: "cover", borderRadius: "8px" }}
-  />
-</div>
-
+            <img
+              src={previewUrl}
+              alt="Pré-visualização"
+              style={{ width: 150, height: 150, objectFit: "cover", borderRadius: 8 }}
+            />
           )}
-          <button
-            className="upload-button"
-            onClick={handleUpload}
-            disabled={!selectedFile}
-          >
+          <button onClick={handleUpload} disabled={!selectedFile}>
             Enviar
           </button>
-          {uploadMessage && <p className="upload-message">{uploadMessage}</p>}
+          {uploadMessage && <p>{uploadMessage}</p>}
         </div>
 
+        {/* Lista de usuários */}
         <div className="user-list-box">
-          <h2 className="login-title">Lista de Usuários</h2>
-          {loading ? (
-            <p className="empty-message">Carregando...</p>
-          ) : users.length === 0 ? (
-            <p className="empty-message">Nenhum usuário encontrado.</p>
-          ) : (
+          <h2>Lista de Usuários</h2>
+          {loading ? <p>Carregando...</p> : (
             <div className="user-list">
               {users.map((user) => (
                 <div
                   key={user.id}
                   className="user-card"
                   style={{
-                    background: user.id === loggedUserId ? "#7e22ce" : undefined,
-                    color: user.id === loggedUserId ? "#fff" : undefined,
+                    background: user.id === loggedUser?.id ? "#7e22ce" : undefined,
+                    color: user.id === loggedUser?.id ? "#fff" : undefined,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10
                   }}
                 >
-                  <p className="user-name">{user.name}</p>
-                  <p className="user-email">{user.email}</p>
+                  {/* Imagem do usuário logado */}
+                  {user.id === loggedUser?.id && (
+                    <img
+                      src={getUserPhotoUrl(loggedUser)}
+                      alt="Foto do usuário"
+                      style={{ width: 40, height: 40, borderRadius: 20 }}
+                    />
+                  )}
+
+                  <div>
+                    <p>{user.name}</p>
+                    <p>{user.email}</p>
+                  </div>
                 </div>
               ))}
             </div>
           )}
           {next !== null && (
-            <button className="next-button" onClick={handleNextPage}>
-              Próxima Página
-            </button>
+            <button onClick={handleNextPage}>Próxima Página</button>
           )}
-          <button
-            className="logout-button"
-            onClick={() => {
-              localStorage.removeItem("token");
-              onLogout();
-            }}
-          >
+          <button onClick={() => { localStorage.removeItem("token"); onLogout(); }}>
             Sair
           </button>
         </div>
+
       </div>
     </div>
   );

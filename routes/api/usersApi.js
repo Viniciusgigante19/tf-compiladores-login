@@ -6,6 +6,7 @@ import CreateController from '../../app/Http/Controllers/UsersApi/CreateControll
 import UpdateController from '../../app/Http/Controllers/UsersApi/UpdateController.js';
 import DeleteController from '../../app/Http/Controllers/UsersApi/DeleteController.js';
 import UploadPhotoController from '../../app/Http/Controllers/UsersApi/UploadPhotoController.js';
+import getImageOfThisUser from '../../app/Http/Controllers/UsersApi/getImageOfThisUser.js'
 
 export default (function () {
 
@@ -26,6 +27,8 @@ export default (function () {
     // DELETE Excluir
     router.delete('/users/:id', DeleteController);
 
+    //Pega imagem do usuario
+    router.get('/users/image/:id',getImageOfThisUser)
 
     router.post('/users/image', VerifyImage, UploadPhotoController);
 
