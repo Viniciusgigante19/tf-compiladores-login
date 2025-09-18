@@ -1,5 +1,6 @@
 import React from 'react';
 import Login from './components/login/login';
+import Home from './components/home/home'
 import { useState, useEffect } from 'react';
 
 const App = () => {
@@ -10,10 +11,14 @@ const App = () => {
     const token = localStorage.getItem('token');
     setAuthenticated(!!token)
   },[])
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setAuthenticated(false)
+  }
 
   return (
     <div>
-        {authenticated? <Home/>: <Login onLogin={() => setAuthenticated(true)}/>}
+        {authenticated? <Home onLogout={handleLogout}/>: <Login onLogin={() => setAuthenticated(true)}/>}
     </div>
   )
 }

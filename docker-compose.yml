@@ -47,6 +47,8 @@ services:
       - IS_CONTAINER=TRUE
       - POSTGRES_HOST=postgres_host
       - POSTGRES_PORT=5432
+    ports:
+      - "3000:3000"
     depends_on:
       - postgres-container
     networks:

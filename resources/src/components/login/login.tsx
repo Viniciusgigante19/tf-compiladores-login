@@ -7,30 +7,40 @@ interface LoginProps {
 
 const Login: FC<LoginProps> = ({ onLogin }) => {
 
+  
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>)=>{
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const form = e.currentTarget;
     const formData = new FormData(form);
     const email = formData.get("email");
-    const password = formData.get("password");
+    const senha = formData.get("password"); 
 
-    const res = await fetch("/login",{
-      method:"POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
 
-    if(res.ok){
-      const data = await res.json();
-      localStorage.setItem("token",data.token);
-      onLogin();
-    }else{
-      const err = await res.json();
-      console.error("Erro ao logar:", err.error);
+    const body = new URLSearchParams();
+    body.append("email", email as string);
+    body.append("password", senha as string);
+
+    try {
+      const res = await fetch("http://localhost:3000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("token", data.token);
+        onLogin();
+      } else {
+        const err = await res.json();
+        console.error("Erro ao logar:", err.error);
+      }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
     }
-  }
+  };
 
   return (
     <div className="login-container">
