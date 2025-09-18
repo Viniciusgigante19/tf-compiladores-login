@@ -6,17 +6,13 @@ interface LoginProps {
 }
 
 const Login: FC<LoginProps> = ({ onLogin }) => {
-
-  
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const form = e.currentTarget;
     const formData = new FormData(form);
     const email = formData.get("email");
-    const senha = formData.get("password"); 
-
+    const senha = formData.get("senha");
 
     const body = new URLSearchParams();
     body.append("email", email as string);
@@ -46,7 +42,6 @@ const Login: FC<LoginProps> = ({ onLogin }) => {
     <div className="login-container">
       <div className="login-card">
         <h2 className="login-title">Login</h2>
-
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="login-fields">
             <div>
@@ -58,24 +53,21 @@ const Login: FC<LoginProps> = ({ onLogin }) => {
                 placeholder="Digite seu email"
               />
             </div>
-
             <div>
-              <label htmlFor="password">Senha</label>
+              <label htmlFor="senha">Senha</label>
               <input
-                id="password"
-                name="password"
+                id="senha"
+                name="senha"
                 type="password"
                 placeholder="Digite sua senha"
               />
             </div>
           </div>
-
           <div className="login-actions">
             <button type="submit" className="login-button">
               Entrar
             </button>
           </div>
-
           <div className="register-link">
             <button type="button">Não tem conta? Criar agora</button>
           </div>

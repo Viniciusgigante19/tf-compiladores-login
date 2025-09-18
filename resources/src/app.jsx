@@ -9,6 +9,11 @@ const App = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+
+    if(!token){
+      return;
+    }
+
     setAuthenticated(!!token)
   },[])
   const handleLogout = () => {
