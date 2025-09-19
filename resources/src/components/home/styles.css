@@ -139,3 +139,12 @@ body {
   background: #9d4edd;
   transform: translateY(-2px);
 }
+.imagem{
+  width: 200px;
+      height: 200px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 8px;
+      border: 1px solid #000;
+      background-image: url('storage/images/imagem.jpg'); 
+}

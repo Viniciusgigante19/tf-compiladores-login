@@ -13,7 +13,7 @@ export default async (request, response) => {
 
     const newName = `${Date.now()}_${arquivo.name.replace(/\s+/g, '_')}`;
 
-    const caminho = CONSTANTS.DIR + `/storage/images/${newName}`;
+    const caminho = CONSTANTS.DIR + `/public/storage/images/${newName}`;
 
     const [rowsAffected, [row]] = await UserModel.update(
         {

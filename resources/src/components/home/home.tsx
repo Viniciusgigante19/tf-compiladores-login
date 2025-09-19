@@ -113,7 +113,7 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
     formData.append("image", selectedFile);
 
     try {
-      const res = await fetch("http://localhost:3000/api/users/image", {
+      const res = await fetch(`http://localhost:3000/api/users/image`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -135,9 +135,8 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
   // Retorna URL da imagem usando a rota do backend
   const getUserPhotoUrl = (user: User) => {
     if (!user.photo) return "/default-user.png"; // fallback
-    return `http://localhost:3000/users/image/${user.id}?t=${Date.now()}`;
+    return `http://localhost:3000/users/image/${user.id}`;
   };
-
   return (
     <div className="home-container">
       <div className="home-content">
