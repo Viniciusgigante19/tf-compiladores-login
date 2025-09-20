@@ -1,8 +1,6 @@
-import path from "path";
-import fs from "fs";
 import UserModel from "../../../Models/UserModel.js";
 
-const baseDir = "../../../../storage/images/"
+const baseDir = "/public/storage/images"
 
 export default async (req, res) => {
   const idUser = req.params.id;
@@ -14,7 +12,9 @@ export default async (req, res) => {
       return res.status(404).json({ error: "Usuário ou foto não encontrada" });
     }
 
-    return baseDir + user.photo;
+    const path = baseDir+"/"+user.photo;
+
+    return res.status(200).json({ path });
 
   } catch (err) {
     console.error(err);

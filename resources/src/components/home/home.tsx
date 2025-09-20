@@ -29,6 +29,8 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploadMessage, setUploadMessage] = useState<string>("");
 
+  let pathImage: string | null | undefined = null;
+
   const limit = 10;
 
   // Pega o ID do usuário do token
@@ -42,7 +44,6 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
       return null;
     }
   };
-
   // Busca usuários paginados
   const fetchUsers = async (currentOffset = 0) => {
     const token = localStorage.getItem("token");
@@ -77,6 +78,7 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
       const res = await fetch(`http://localhost:3000/api/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
       if (!res.ok) throw new Error("Erro ao buscar usuário logado");
 
       const data: User = await res.json();
@@ -86,9 +88,40 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
     }
   };
 
+  // Busca imagem do usuário logado
+  const fetchLoggedUserImage = async () => {
+    
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    
+    const id = getUserIdFromToken();
+    console.log(id)
+    if (!id) return;
+
+    try{
+
+      const res = await fetch(`http://localhost:3000/api/users/image/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) pathImage='/public/images/default_icon.jpg';
+
+       const data = await res.json();
+       console.log("Resposta da API:", data);
+
+       pathImage = data.path || null;
+      console.log(pathImage)
+    }catch(error){}
+
+  }
+fetchLoggedUserImage();
+if(pathImage){
+      console.log("Imagem carregada:"+pathImage)
+    }
   useEffect(() => {
     const id = getUserIdFromToken();
-    if (id) fetchLoggedUser(id);
+    if (id) {
+    fetchLoggedUser(id)};
     fetchUsers();
   }, []);
 
@@ -132,11 +165,6 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
     }
   };
 
-  // Retorna URL da imagem usando a rota do backend
-  const getUserPhotoUrl = (user: User) => {
-    if (!user.photo) return "/default-user.png"; // fallback
-    return `http://localhost:3000/users/image/${user.id}`;
-  };
   return (
     <div className="home-container">
       <div className="home-content">
@@ -176,13 +204,17 @@ const Home: FC<HomeProps> = ({ onLogout }) => {
                   }}
                 >
                   {/* Imagem do usuário logado */}
-                  {user.id === loggedUser?.id && (
+                  {user.id === loggedUser?.id && pathImage && (
                     <img
-                      src={getUserPhotoUrl(loggedUser)}
+                      src={pathImage}
                       alt="Foto do usuário"
                       style={{ width: 40, height: 40, borderRadius: 20 }}
                     />
                   )}
+                  
+        
+
+
 
                   <div>
                     <p>{user.name}</p>
